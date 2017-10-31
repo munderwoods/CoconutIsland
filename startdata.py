@@ -1,26 +1,54 @@
 import re
+import datetime
 printbuffer = ["You're soaked. Have been for hours. There's lightning, but you can't hear the thunder over the constant beat of the rain on the ocean. In the flashes you can see the big houses on Ingrete tumbling down the hillside. Must have been a mudslide. Chop is lapping onto the dock and washing over your ankles. You came to Ricken's because you've already expended your other options. He can get you out and he wants what you've got."]
 promptinput = ""
 action = ""
 location = "Ricken's Door"
 Inventory = [{"Name":"Gold Bar", "Visual Description":"Solid gold is heavy and this is a lot of it. There is a trident stamped into the side.","Location Description":"There is a gold bar here. A big one.", "Obtainable":True,}]
 mappos = {"y":0,"x":8}
-mapgrid=[["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],
-         ["_", "_", "_", "_", "_","_", "_", "_", "_", "_","_", "_", "_", "_", "_",],]
+mapgrid=[["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
+         ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],]
 selficon="_"
 status=[]
+blood = 10
+bloodbar=[]
+stamina = 10
+staminabar=[]
+mobility = 10
+mobilitybar=[]
+temperature = 5
+temperaturebar=[]
+thirst = 10
+thirstmod=3
+thirstfloor=1
+thirstbar=[]
+hunger = 10
+hungermod=10
+hungerfloor=1
+hungerbar=[]
+bloodmod=1
+bloodfloor=2
+staminamod=1
+staminafloor=1
+mobilitymod=1
+mobilityfloor=1
+makeables=[{"Name" : "Fire","Visual Description" : "A small fire. It offers meager warmth.", "Location Description" : "There is a fire here.", "Obtainable" : False,},
+           {"Name" : "Sundial","Visual Description" : "A stick protruding from the sand. The shadow coming off of the stick indicates the time of day. Only works where sunlight is present.", "Location Description" : "There is a sundial here.", "Obtainable" : False,}]
+
+time=65
+hours=0
 
 Locations = {
         "Ricken's Door" : {
@@ -41,6 +69,8 @@ Locations = {
                     ],
             "Icon" : "_",
             "Visited" : True,
+            "Temperature" : 5,
+            "Access" : "Open",
             },
         "Ricken's Hovel" : {
             "Direction" : {
@@ -59,6 +89,8 @@ Locations = {
                 ],
             "Icon" : "_",
             "Visited":False,
+            "Temperature" : 6,
+            "Access" : "Open",
             },
         "Docks" : {
             "Direction" : {
@@ -74,7 +106,9 @@ Locations = {
                 ],
             "Icon" : "_",
             "Visited":False,
-            "First Visit Text" : "As the crowd encroahces on his boat, Ricken fires his rifle into the air. The scene goes quiet except for one woman with a baby. She sees you waiver as you board and she pleads for you to take the child. You look away and she pushes it under your arm. You throw your hands up and the kid goes into the drink. She goes onto her knees. Two of the men leap at you."
+            "First Visit Text" : "As the crowd encroahces on his boat, Ricken fires his rifle into the air. The scene goes quiet except for one woman with a baby. She sees you waiver as you board and she pleads for you to take the child. You look away and she pushes it under your arm. You throw your hands up and the kid goes into the drink. She goes onto her knees. Two of the men leap at you.",
+            "Temperature" : 5,
+            "Access" : "Open",
             },
         "Unconscious" : {
             "Direction" : {
@@ -90,6 +124,8 @@ Locations = {
                 ],
             "Icon" : "_",
             "Visited":False,
+            "Temperature" : 5,
+            "Access" : "Open",
             },
         "Ocean" : {
             "Direction" : {
@@ -99,16 +135,14 @@ Locations = {
                 "West" : None,
                 },
             "Description" : {
-                "Neutral" : "You are on a one-man boat on a roiling sea. The sky is blotched with dark, gray clouds. It fades into the ocean in all directions save to the south. There you see a sliver of dark between the peaks of the waves.",
+                "Neutral" : "You are on a small boat on a roiling sea. The sky is blotched with dark, gray clouds. It fades into the ocean in all directions save to the south. There you see a sliver of dark between the peaks of the waves.",
                 },
-            "Items" : [{
-                    "Name" : "Map", "Visual Description" : "A map of the indian ocean. From what you can tell, your current location is unmarked. You will have to update the map as you go.","Location Description" : "There is what appears to be a rolled up map under the bench.", "Obtainable" : True,
-                    },{
-                    "Name" : "Oar", "Visual Description" : "A wooden oar that has been worn smooth and shiny from use.","Location Description" : "There is an oar sitting next to you.", "Obtainable" : True,
-                    },
+            "Items" : [
                     ],
             "Icon" : "\u223F",
-            "Visited" : True,
+            "Visited" : False,
+            "Temperature" : 5,
+            "Access" : "Water",
             },
         "Shore" : {
             "Direction" : {
@@ -118,13 +152,22 @@ Locations = {
                 "West" : None,
                 },
             "Description" : {
-                "Neutral" : "The sand is gray, as is everything. A one-man boat cuts into it near the lapping waves. The sea is north. To the east and west there is more beach. South there is a path into the jungle. A bare, black crag juts out from its center.",
+                "Neutral" : "The sand is gray, as is everything. The sea is north. To the east and west there is more beach. South there is a path into the jungle. A bare, black crag juts out from its center.",
                 },
             "Items" : [ {
-                    "Name" : "Sand", "Visual Description" : "Fine, gray sand.", "Location Description" : "There is sand as far as you can see.", "Obtainable" : True,
-                    }],
+                    "Name" : "Sand", "Visual Description" : "Fine, gray sand.", "Location Description" : "There is sand here.", "Obtainable" : True,
+                    },
+                    {
+                        "Name" : "Boat", "Visual Description" : "It's got room for four crew or some small cargo.", "Location Description" : "There is a boat here.", "Obtainable" : False, "Holding": [{
+                    "Name" : "Map", "Visual Description" : "A map of the indian ocean. From what you can tell, your current location is unmarked. You will have to update the map as you go.","Location Description" : "There is what appears to be a rolled up map here.", "Obtainable" : True,
+                    },{
+                    "Name" : "Oar", "Visual Description" : "A wooden oar that has been worn smooth and shiny from use.","Location Description" : "There is an oar sitting next to you.", "Obtainable" : True,
+                    },],
+                    },],
             "Icon" : "\u2592",
-            "Visited":False,
+            "Visited":True,
+            "Temperature" : 5,
+            "Access" : "Shore",
             },
         "Jungle" : {
             "Direction" : {
@@ -139,10 +182,13 @@ Locations = {
             "Items" :[ {
                     "Name" : "Coconut", "Visual Description" : "A round, Harry coconut.", "Location Description" : "There is a coconut half buried here.", "Obtainable" : True,
                     },
-                    {"Name" : "Ferns", "Visual Description" : "The ferns are oozing a clear, sticky substance.", "Location Description" : "","Obtainable" : True,
-                }],
+                    {"Name" : "Ferns", "Visual Description" : "The ferns are oozing a clear, sticky substance.", "Location Description" : "There are sticky ferns here.","Obtainable" : True,
+                },{
+                    "Name" : "Wood", "Visual Description" : "A small bit of wood.", "Location Description" : "There is wood here.", "Obtainable" : True,}],
             "Icon" : "J",
             "Visited":False,
+            "Temperature" : 5,
+            "Access" : "Open",
             },
         "Cave" : {
             "Direction" : {
@@ -156,16 +202,47 @@ Locations = {
                 "Neutral" : "You are in a dark cave. The walls are wet and slick. After your eyes adjust you can see what appears to be a switch set into the wall high above you.",
                 "Effected" : "Everything around you is on fire. There is a large crack to the north. You can see jungle beyond it. To the south there is a low opening.",
                 },
-            "Items" : {
-                },
+            "Items" :
+                [],
             "Icon" : "C",
             "Visited":False,
+            "Temperature" : 4,
+            "Access" : "Open",
+            },
+        "Chamber" : {
+            "Direction" : {
+                "North" : "Cave",
+                "East" : None,
+                "South" : None,
+                "West" : None,
+                "Hidden" : None,
+                },
+            "Description" : {
+                "Neutral" : "This is a smaller cave. The walls are jagged and shiny.",
+                "Effected" : "",
+                },
+            "Items" :
+            [{"Name" : "Flint", "Visual Description" : "A shiny, smooth stone with sharp edges.", "Location Description" : "There is flint here.", "Obtainable" : True,}],
+            "Icon" : "F",
+            "Visited":False,
+            "Temperature" : 4,
+            "Access" : "Open",
             },
         }
 
+
+
+
+
+
+
+
+
+
+
 Actions = {
         "Talk to Ricken" : {
-            "Test" : lambda pi : matchall(["talk","ricken"], pi) and location == "Ricken's Hovel" and checkinventory("Gold Bar"),
+            "Test" : lambda pi : matchany(["talk","speak"], pi) and location == "Ricken's Hovel" and checkinventory("Gold Bar"),
             "Behavior" : lambda pi : addprintbuffer(""""Take me with you," you plead. The storm bursts the window and sheets of rain crash on your faces. Ricken's voice is plodding. "Boat holds four." "Leave the others," you stammer, "Just take me. I'm a doctor. Who knows how long it'll be until you get picked up?" Ricken's face doesn't change. He says, "Show it to me." """),
             },
         "Give Ricken Gold Bar" : {
@@ -178,7 +255,7 @@ Actions = {
                 },
         "Use Coconut on Switch" : {
             "Test" : lambda pi : matchall(["coconut","switch"], pi) and location == "Cave" and checkinventory("Coconut"),
-            "Behavior" : lambda pi : [drop("Coconut"), changelocationdescription(location, "Effected"), reassigndirection(location, "South", "Hidden",), addprintbuffer("The coconut leaves your hand in a perfect arch and makes definite contact with the switch then bounces out of sight. A light flickers from somewhere high above the switch then a ring of fire encircles the ceiling of the cave. The fire decends down the oily walls and soon you are surrounded by flames. One the wall of the cave to the south collapses and burns away. It was a false wall.")],
+            "Behavior" : lambda pi : [drop("Coconut"),changetemp("Cave", 10), changelocationdescription(location, "Effected"), reassigndirection(location, "South", "Hidden",), addprintbuffer("The coconut leaves your hand in a perfect arch and makes definite contact with the switch. A light flickers from somewhere high above the switch then a ring of fire encircles the ceiling of the cave. The fire decends down the oily walls and soon you are surrounded by flames. One the wall of the cave to the south collapses and burns away. It was a false wall.")],
             },
         "Knock On Ricken's Door" : {
             "Test" : lambda pi : location == "Ricken's Door" and matchany(["Knock","rap","tap",],pi) and Locations["Ricken's Door"]["Items"][0]["Open"]==False,
@@ -189,12 +266,44 @@ Actions = {
             "Behavior" : lambda pi : wakeup(),
             },
         "Use Ferns On Leg" : {
-            "Test" : lambda pi : checkinventory("Ferns") and checkstatus("Laceration in Right Thigh (Bandaged--Bleeding)") and match("ferns", pi) and matchany(["leg","bandage","wound","laceration"],pi),
+            "Test" : lambda pi : checkinventory("Ferns") and checkstatus("Laceration") and matchany(["bandage","wound","laceration","cut"],pi),
             "Behavior" : lambda pi : usefernsonleg(),
             },
         "Inspect Item" : {
             "Test" : lambda pi : matchany(["inspect","look"], pi) and (matchany(getinventoryitemnames(), pi) or matchany(getlocationitemnames(), pi)),
             "Behavior" : lambda pi : inspectavailableitems(pi),
+            },
+        "Drop Item" : {
+            "Test" : lambda pi : match("drop", pi) and (matchany(getinventoryitemnames(), pi) or matchany(getlocationitemnames(), pi)),
+            "Behavior" : lambda pi : drop(pi),
+            },
+        "Put in Boat" : {
+            "Test" : lambda pi : matchall(["put","boat"], pi) and (matchany(getinventoryitemnames(), pi) or matchany(getlocationitemnames(), pi)),
+            "Behavior" : lambda pi : putinboat(pi),
+            },
+        "Start Fire" : {
+            "Test" : lambda pi : checkavailableitems("Wood") and checkavailableitems("Flint") and matchany(["use","make","build","Construct","start"],pi) and (match("Fire",pi) or (matchall(["wood","flint"],pi))),
+            "Behavior" : lambda pi : [make("Fire"), removeitem("Wood",Inventory),removeitem("Flint",Inventory),],
+            },
+        "Make Sundial" : {
+            "Test" : lambda pi : checkavailableitems("Wood") and checkavailableitems("Sand") and matchany(["use","make","build","Construct","start"],pi) and (match("Sundial",pi) or (matchall(["wood","sand"],pi))),
+            "Behavior" : lambda pi : [make("Sundial"), removeitem("Wood",Inventory),removeitem("Sand",Inventory),],
+            },
+        "Move Northn" : {
+            "Test" : lambda pi : n("n", pi),
+            "Behavior" : lambda pi : move("North"),
+            },
+        "Move Easte" : {
+            "Test" : lambda pi : n("e", pi),
+            "Behavior" : lambda pi : move("East"),
+            },
+        "Move Souths" : {
+            "Test" : lambda pi : n("s", pi),
+            "Behavior" : lambda pi : move("South"),
+            },
+        "Move Westw" : {
+            "Test" : lambda pi : n("w", pi),
+            "Behavior" : lambda pi : move("West"),
             },
         "Move North" : {
             "Test" : lambda pi : match("north", pi),
@@ -220,6 +329,10 @@ Actions = {
             "Test" : lambda pi : match("inv", pi),
             "Behavior" : lambda pi : printinventory(),
             },
+        "Wait" : {
+            "Test" : lambda pi : matchany(["wait","rest","sleep"],pi),
+            "Behavior" : lambda pi:addprintbuffer("Time passes."),
+            },
         }
 
 
@@ -229,10 +342,196 @@ def log(string):
         l.write("\nNone")
 
     l.write("\n" + repr(string))
+
+def removeitem(item, l):
+    for n, i in enumerate(l):
+        if i["Name"]==item:
+            del l[n]
+
+def make(thing):
+    for i in makeables:
+        if i["Name"]==thing:
+            addprintbuffer("You have made "+thing+".")
+            if i["Obtainable"] is True:
+                Inventory.append(i)
+            else:
+                Locations[location]["Items"].append(i)
+
+def daynight():
+    global hours
+    td=datetime.timedelta(minutes=(time*20))
+    hours, remainder = divmod(td.seconds,3600)
+    if hours >= 6 and hours <22:
+        return "Day"
+    if hours >= 22 or hours >=0 and hours < 6 :
+        return "Night"
+
+def changetemp(location, temp):
+    Locations[location]["Temperature"]=temp
+
+def dead():
+    global promptinput
+    clearprintbuffer()
+    addprintbuffer("You died.")
+    print("You died")
+    1/0
+
+
+def setstats():
+    global blood
+    global bloodbar
+    global stamina
+    global staminabar
+    global mobility
+    global mobilitybar
+    global temperature
+    global temperaturebar
+    global thirst
+    global thirstbar
+    global hunger
+    global hungerbar
+    global status
+    global hours
+
+
+    bloodbar=[]
+    staminabar=[]
+    mobilitybar=[]
+    temperaturebar=[]
+    thirstbar=[]
+    hungerbar=[]
+
+    temperature = Locations[location]["Temperature"]
+    if daynight() == "Night":
+        temperature-=2
+    if hours >= 12 and hours < 14:
+        temperature+=2
+    if checklocalinventory("Fire") is True:
+        temperature+=2
+    if blood<10 and hunger>=3 and temperature >3 and time % 1 == 0:
+        blood+=1
+    if stamina<10 and hunger>=3 and time % 1 ==0:
+        stamina+=1
+        staminafloor=time
+    if mobility<10 and time % 1 == 0:
+        mobility+=1
+        mobilityfloor=time
+    if time %10 ==0:
+        hunger-=1
+        hungerfloor=time
+    if time % 5 == 0:
+        thirst-=1
+        thirstfloor=time
+    if thirst<1:
+        blood-=2
+    if hunger<1:
+        blood-=1
+    if stamina<5:
+        mobility-=4
+    if temperature <3:
+        hunger-=1
+        if checkstatus("Cold") is not True:
+            status.append("Cold")
+    if temperature >= 3:
+        if checkstatus("Cold") is True:
+            removestatus("Cold")
+    if temperature <= 1:
+        blood-=1
+        if checkstatus("Freezing") is not True:
+            status.append("Freezing")
+        if checkstatus("Cold") is True:
+            removestatus("Cold")
+    if temperature > 1:
+        if checkstatus("Freezeing") is True:
+            removestatus("Freezing")
+    if temperature > 7:
+        thirst-=1
+        if checkstatus("Hot") is not True:
+            status.append("Hot")
+    if temperature <= 7:
+        if checkstatus("Hot") is True:
+            removestatus("Hot")
+    if temperature >= 10:
+        blood-=2
+        if checkstatus("Burning") is not True:
+            status.append("Burning")
+        if checkstatus("Hot") is True:
+            removestatus("Hot")
+    if temperature < 10:
+        if checkstatus("Burning") is True:
+            removestatus("Burning")
+    if thirst<3:
+        stamina-=1
+        if checkstatus("Thirsty") is not True:
+            status.append("Thirsty")
+    if thirst>=3:
+        if checkstatus("Thirsty") is True:
+            removestatus("Thirsty")
+    if hunger<3:
+        stamina-=1
+        if checkstatus("Hungry") is not True:
+            status.append("Hungry")
+    if hunger >= 3:
+        if checkstatus("Hungry") is True:
+            removestatus("Hungry")
+
+
+
+    if checkstatus("Laceration"):
+        if blood>5:
+            blood=5
+        if mobility>5:
+            mobility=5
+
+    if blood<0:
+        blood=0
+    if blood ==0:
+        dead()
+    if blood>10:
+        blood=10
+    if stamina<0:
+        stamina=0
+    if stamina>10:
+        stamina=10
+    if mobility<0:
+        mobility=0
+    if temperature<0:
+        temperature=0
+    if temperature>10:
+        temperature=10
+    if thirst<0:
+        thirst=0
+    if thirst>10:
+        thirst=10
+    if hunger<0:
+        hunger=0
+    if hunger>10:
+        hunger=10
+    bloodbar=["\u2588"]*blood
+    bloodbar.append("\u2592"*(10-blood))
+    staminabar=["\u2588"]*stamina
+    staminabar.append("\u2592"*(10-stamina))
+    mobilitybar=["\u2588"]*mobility
+    mobilitybar.append("\u2592"*(10-mobility))
+    temperaturebar=["\u2588"]*temperature
+    temperaturebar.append("\u2592"*(10-temperature))
+    thirstbar=["\u2588"]*thirst
+    thirstbar.append("\u2592"*(10-thirst))
+    hungerbar=["\u2588"]*hunger
+    hungerbar.append("\u2592"*(10-hunger))
+
+def n(i,p):
+    return bool(i==p)
+
+def removestatus(item):
+    global status
+    for n, s in enumerate(status):
+        if s==item:
+            del status[n]
 def usefernsonleg():
     global status
     for n, s in enumerate(status):
-        if s=="Laceration in Right Thigh (Bandaged--Bleeding)":
+        if s=="Laceration":
             del status[n]
             addprintbuffer("You rub the oozing fern on the wound in your leg and it causes a cool, numbing sensation. The bleeding has stopped.")
 def openrickensdoor():
@@ -251,21 +550,23 @@ def wakeup():
         if s == "Unconscious":
             del status[n]
     for n, s in enumerate(status):
-        if s =="Laceration in Right Thigh":
-            status[n]="Laceration in Right Thigh (Bandaged--Bleeding)"
+        if s =="Laceration":
+            status[n]="Laceration"
     global selficon
     selficon="@"
     global mappos
-    mappos = {"y":0,"x":8}
+    mappos = {"y":1,"x":8}
     global location
-    location = "Ocean"
-    addprintbuffer("You wake up and fling your head over the side of the boat, vomiting into the ocean. Your leg hurts bad. It's been wrapped in cloth, but it's still bleeding. It needs some sort of ointment to stop it. You are alone.")
+    location = "Shore"
+    addprintbuffer("You wake up on a gray beach, half submerged and vomit into the ocean. Your leg hurts bad. It's been wrapped in cloth, but it's still bleeding. It needs some sort of ointment to stop it. You are alone.")
 
 def gounconscious():
     global location
     global Inventory
     global status
-    status.append("Laceration in Right Thigh")
+    global time
+    time+=20
+    status.append("Laceration")
     status.append("Unconscious")
     Inventory = []
     location = "Unconscious"
@@ -278,6 +579,10 @@ def mapupdate():
 
 def inspectavailableitems(p):
     Item = (matchbynameList(p, Inventory) or matchbynameList(p, Locations[location]["Items"]))
+    for i in Locations[location]["Items"]:
+        if i["Name"]=="Boat":
+            if matchbynameList(p,i["Holding"]) is not False:
+                Item = matchbynameList(p, i["Holding"])
     if Item is not None:
         addprintbuffer(Item["Visual Description"])
 
@@ -294,7 +599,7 @@ def matchbynameList(pattern, l):
     for dic in l:
         if match(dic["Name"], pattern):
             return dic
-
+    return False
 def matchbyname(pattern, l):
     for string in l:
         if match(string, pattern):
@@ -309,12 +614,45 @@ def changelocationdescription(l, description):
 def drop(itemname):
     item=None
     for i in Inventory:
-        if itemname == i["Name"]:
+        if match(i["Name"],itemname):
             item = i
 
         if item == i:
             Inventory.remove(item)
+            Locations[location]["Items"].append(item)
             addprintbuffer("You no longer possess " + item["Name"] + ".")
+
+def putinboat(itemname):
+    item=None
+    for b in Locations[location]["Items"]:
+        if b["Name"]=="Boat":
+            for i in Inventory:
+                if match(i["Name"],itemname):
+                    item = i
+
+                if item == i:
+                    Inventory.remove(item)
+                    b["Holding"].append(item)
+                    addprintbuffer("You no longer possess " + item["Name"] + ".")
+
+def checkavailableitems(item):
+    boat=None
+    for b in Locations[location]["Items"]:
+        if b["Name"]=="Boat":
+            boat=b
+    for i in Inventory:
+        if i["Name"]==item:
+            return True
+    for a in Locations[location]["Items"]:
+        if a["Name"]==item:
+                    return True
+    if boat is not None:
+        for c in Locations[location]["Items"]:
+            if c["Name"]=="Boat":
+                for d in c["Holding"]:
+                    if d["Name"]==item:
+                        return True
+    return False
 
 def checkinventory(pattern):
     for i in Inventory:
@@ -322,7 +660,14 @@ def checkinventory(pattern):
             return True
     return False
 
+def checklocalinventory(item):
+    for i in Locations[location]["Items"]:
+        if i["Name"]==item:
+            return True
+    return False
+
 def checkstatus(pattern):
+    global status
     for i in status:
         if i == pattern:
             return True
@@ -346,6 +691,10 @@ def getlocationitemnames():
     LocNames=[]
     for i in Locations[location]["Items"]:
         LocNames.append(i["Name"])
+    for stuff in Locations[location]["Items"]:
+        if stuff["Name"]=="Boat":
+            for h in stuff["Holding"]:
+                LocNames.append(h["Name"])
     return LocNames
 
 def match(pattern, string):
@@ -373,41 +722,122 @@ def pickup(itemname):
             Inventory.append(item)
             addprintbuffer("You have obtained " + item["Name"] + ".")
             return
+    for n in Locations[location]["Items"]:
+        if n["Name"]=="Boat":
+            for h in n["Holding"]:
+                if itemname == h["Name"] and h["Obtainable"] is True:
+                    item = h
+                    n["Holding"].remove(item)
+                    Inventory.append(item)
+                    addprintbuffer("You have obtained " + item["Name"] + ".")
+                    return
 
     addprintbuffer("You cannot.")
 
 def move(direction):
     global location
-    if Locations[location]["Direction"][direction] is None:
+    boat=None
+    destination=Locations[location]["Direction"][direction]
+    for b in Locations[location]["Items"]:
+        if b["Name"]=="Boat":
+            boat=b
+    if destination is None:
         addprintbuffer("You cannot.")
-
+        return
     else:
-        mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
-        location = Locations[location]["Direction"][direction]
-        if Locations[location]["Visited"]==False:
-            Locations[location]["Visited"]=True
-            try:
-                addprintbuffer(Locations[location]["First Visit Text"])
-            except KeyError:
-                addprintbuffer("")
-        if direction == "South":
-            mappos["y"]=mappos["y"]+1
-        if direction == "North":
-            mappos["y"]=mappos["y"]-1
-        if direction == "East":
-            mappos["x"]=mappos["x"]+1
-        if direction == "West":
-            mappos["x"]=mappos["x"]-1
+        if Locations[destination]["Access"]=="Open":
+            mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
+            location = destination
+            if Locations[location]["Visited"]==False:
+                Locations[location]["Visited"]=True
+                try:
+                    addprintbuffer(Locations[location]["First Visit Text"])
+                except KeyError:
+                    addprintbuffer("")
+            if direction == "South":
+                mappos["y"]=mappos["y"]+1
+            if direction == "North":
+                mappos["y"]=mappos["y"]-1
+            if direction == "East":
+                mappos["x"]=mappos["x"]+1
+            if direction == "West":
+                mappos["x"]=mappos["x"]-1
+        elif boat is not None and Locations[destination]["Access"]=="Water":
+            addprintbuffer("BOAT IS TRUE")
+            Locations[location]["Items"].remove(boat)
+            Locations[destination]["Items"].append(boat)
+            mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
+            location = destination
+            if Locations[location]["Visited"]==False:
+                Locations[location]["Visited"]=True
+                try:
+                    addprintbuffer(Locations[location]["First Visit Text"])
+                except KeyError:
+                    addprintbuffer("")
+            if direction == "South":
+                mappos["y"]=mappos["y"]+1
+            if direction == "North":
+                mappos["y"]=mappos["y"]-1
+            if direction == "East":
+                mappos["x"]=mappos["x"]+1
+            if direction == "West":
+                mappos["x"]=mappos["x"]-1
+        elif boat is not None and Locations[location]["Access"]=="Water" and Locations[destination]["Access"]=="Shore":
+            Locations[location]["Items"].remove(boat)
+            Locations[destination]["Items"].append(boat)
+            mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
+            location = destination
+            if Locations[location]["Visited"]==False:
+                Locations[location]["Visited"]=True
+                try:
+                    addprintbuffer(Locations[location]["First Visit Text"])
+                except KeyError:
+                    addprintbuffer("")
+            if direction == "South":
+                mappos["y"]=mappos["y"]+1
+            if direction == "North":
+                mappos["y"]=mappos["y"]-1
+            if direction == "East":
+                mappos["x"]=mappos["x"]+1
+            if direction == "West":
+                mappos["x"]=mappos["x"]-1
+        elif Locations[destination]["Access"]=="Shore":
+            mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
+            location = destination
+            if Locations[location]["Visited"]==False:
+                Locations[location]["Visited"]=True
+                try:
+                    addprintbuffer(Locations[location]["First Visit Text"])
+                except KeyError:
+                    addprintbuffer("")
+            if direction == "South":
+                mappos["y"]=mappos["y"]+1
+            if direction == "North":
+                mappos["y"]=mappos["y"]-1
+            if direction == "East":
+                mappos["x"]=mappos["x"]+1
+            if direction == "West":
+                mappos["x"]=mappos["x"]-1
+
+
 def getprompt() :
     promptitemloop()
     return "\n".join(printbuffer)
 
 def promptitemloop():
     l = []
+    boatitems=[]
     if bool(Locations[location]["Items"]) is True :
         for item in Locations[location]["Items"]:
             l.append(item["Location Description"])
         addprintbuffer(" ".join(l))
+    for i in Locations[location]["Items"]:
+        if i["Name"]=="Boat":
+            for h in i["Holding"]:
+                boatitems.append(h["Name"])
+            if len(i["Holding"]) != 0:
+                addprintbuffer("The boat is holding "+", ".join(boatitems)+".")
+
 
 def findaction(promptinput):
     for key in Actions:
