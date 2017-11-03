@@ -1,10 +1,12 @@
 import re
 import datetime
+from copy import deepcopy
 printbuffer = ["You're soaked. Have been for hours. There's lightning, but you can't hear the thunder over the constant beat of the rain on the ocean. In the flashes you can see the big houses on Ingrete tumbling down the hillside. Must have been a mudslide. Chop is lapping onto the dock and washing over your ankles. You came to Ricken's because you've already expended your other options. He can get you out and he wants what you've got."]
 promptinput = ""
 action = ""
 location = "Ricken's Door"
-Inventory = [{"Name":"Gold Bar", "Visual Description":"Solid gold is heavy and this is a lot of it. There is a trident stamped into the side.","Location Description":"There is a gold bar here. A big one.", "Obtainable":True,}]
+Inventory = [{"Name":"Gold Bar", "Visual Description":"Solid gold is heavy and this is a lot of it. There is a trident stamped into the side.","Location Description":"There is a gold bar here. A big one.", "Obtainable":1,}]
+MaxInventorySize=4
 mappos = {"y":0,"x":8}
 mapgrid=[["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
          ["_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_", "_",],
@@ -44,8 +46,9 @@ staminamod=1
 staminafloor=1
 mobilitymod=1
 mobilityfloor=1
-makeables=[{"Name" : "Fire","Visual Description" : "A small fire. It offers meager warmth.", "Location Description" : "There is a fire here.", "Obtainable" : False,},
-           {"Name" : "Sundial","Visual Description" : "A stick protruding from the sand. The shadow coming off of the stick indicates the time of day. Only works where sunlight is present.", "Location Description" : "There is a sundial here.", "Obtainable" : False,}]
+makeables=[{"Name" : "Fire","Visual Description" : "A small fire. It offers meager warmth.", "Location Description" : "There is a fire here.", "Obtainable" : 0,},
+           {"Name" : "Sundial","Visual Description" : "A stick protruding from the sand. The shadow coming off of the stick indicates the time of day. Only works where sunlight is present.", "Location Description" : "There is a sundial here.", "Obtainable" : 0,},
+           {"Name":"Pack", "Visual Description":"A crude packpack you crafted out of an old shipmast and some vines. It carries little and looks like it might fall apart from a slight jossling.","Location Description":"There is a pack here.", "Obtainable":1,}]
 
 time=65
 hours=0
@@ -65,7 +68,7 @@ Locations = {
                 "Effected" :"You stand in front of Ricken's door. It's east of you. His home is a dilapidated shack in a row of dilapidated shacks that line the waterfront. North of you is the docks. Ricken has cleared a path through to the boats. The cobblestone is slippery under your boots.",
                 },
             "Items" : [{
-                "Name" : "Door", "Visual Description" : "A shoddy wooden door.", "Location Description" : "The door to Ricken's hovel is locked." , "Obtainable" : False, "Open" : False,}
+                "Name" : "Door", "Visual Description" : "A shoddy wooden door.", "Location Description" : "The door to Ricken's hovel is locked." , "Obtainable" : 0, "Open" : False,}
                     ],
             "Icon" : "_",
             "Visited" : True,
@@ -83,9 +86,9 @@ Locations = {
                 "Neutral" : "A small room lit by a mostly open fire with a cast iron pot hung over it. There are rum bottles scattered across the floor. The door to the west leads outside.",
                 },
             "Items" : [{
-                "Name" : "Ricken", "Visual Description" : "Ricken is a seaman if there ever was one. He has wispy silver hair that matches his moustaches. The moustaches, like his eyes and nose, are thin.", "Location Description" : "Ricken is standing by the fire, drinking.", "Obtainable" : False,},
+                "Name" : "Ricken", "Visual Description" : "Ricken is a seaman if there ever was one. He has wispy silver hair that matches his moustaches. The moustaches, like his eyes and nose, are thin.", "Location Description" : "Ricken is standing by the fire, drinking.", "Obtainable" : 0,},
             {
-                "Name" : "Rifle", "Visual Description" : "A long, wooden rifle. You don't know enough to say more about it.", "Location Description" : "", "Obtainable" : True,},
+                "Name" : "Rifle", "Visual Description" : "A long, wooden rifle. You don't know enough to say more about it.", "Location Description" : "", "Obtainable" : 1,},
                 ],
             "Icon" : "_",
             "Visited":False,
@@ -149,19 +152,19 @@ Locations = {
                 "North" : "Ocean",
                 "East" : None,
                 "South" : "Jungle",
-                "West" : None,
+                "West" : "Delta",
                 },
             "Description" : {
                 "Neutral" : "The sand is gray, as is everything. The sea is north. To the east and west there is more beach. South there is a path into the jungle. A bare, black crag juts out from its center.",
                 },
             "Items" : [ {
-                    "Name" : "Sand", "Visual Description" : "Fine, gray sand.", "Location Description" : "There is sand here.", "Obtainable" : True,
+                    "Name" : "Sand", "Visual Description" : "Fine, gray sand.", "Location Description" : "There is sand here.", "Obtainable" : 2,
                     },
                     {
-                        "Name" : "Boat", "Visual Description" : "It's got room for four crew or some small cargo.", "Location Description" : "There is a boat here.", "Obtainable" : False, "Holding": [{
-                    "Name" : "Map", "Visual Description" : "A map of the indian ocean. From what you can tell, your current location is unmarked. You will have to update the map as you go.","Location Description" : "There is what appears to be a rolled up map here.", "Obtainable" : True,
+                        "Name" : "Boat", "Visual Description" : "It's got room for four crew or some small cargo.", "Location Description" : "There is a boat here.", "Obtainable" : 0, "Holding": [{
+                    "Name" : "Map", "Visual Description" : "A map of the indian ocean. From what you can tell, your current location is unmarked. You will have to update the map as you go.","Location Description" : "There is what appears to be a rolled up map here.", "Obtainable" : 1,
                     },{
-                    "Name" : "Oar", "Visual Description" : "A wooden oar that has been worn smooth and shiny from use.","Location Description" : "There is an oar sitting next to you.", "Obtainable" : True,
+                    "Name" : "Oar", "Visual Description" : "A wooden oar that has been worn smooth and shiny from use.","Location Description" : "There is an oar sitting next to you.", "Obtainable" : 1,
                     },],
                     },],
             "Icon" : "\u2592",
@@ -180,11 +183,14 @@ Locations = {
                 "Neutral" : "The air in the jungle is thick. You can only cut a narrow path through. Huge ferns sweep past your legs as you walk. They could be hiding anything. To the south, almost hidden behind a huge, moss covered rock, you find the entrance to the cave. To the east and west there is more jungle. You can hear the ocean to the north.",
                 },
             "Items" :[ {
-                    "Name" : "Coconut", "Visual Description" : "A round, Harry coconut.", "Location Description" : "There is a coconut half buried here.", "Obtainable" : True,
+                    "Name" : "Coconut", "Visual Description" : "A round, Harry coconut.", "Location Description" : "There is a coconut half buried here.", "Obtainable" : 1,
                     },
-                    {"Name" : "Ferns", "Visual Description" : "The ferns are oozing a clear, sticky substance.", "Location Description" : "There are sticky ferns here.","Obtainable" : True,
+                    {"Name" : "Ferns", "Visual Description" : "The ferns are oozing a clear, sticky substance.", "Location Description" : "There are sticky ferns here.","Obtainable" : 2,
                 },{
-                    "Name" : "Wood", "Visual Description" : "A small bit of wood.", "Location Description" : "There is wood here.", "Obtainable" : True,}],
+                    "Name" : "Wood", "Visual Description" : "A small bit of wood.", "Location Description" : "There is wood here.", "Obtainable" : 2,},
+                {
+                    "Name" : "Vines", "Visual Description" : "Some long, thin vines that curl around the trees here. They are dark green and shine in the sunlight.", "Location Description" : "There are some vines here.", "Obtainable" : 2,
+                }],
             "Icon" : "J",
             "Visited":False,
             "Temperature" : 5,
@@ -222,12 +228,34 @@ Locations = {
                 "Effected" : "",
                 },
             "Items" :
-            [{"Name" : "Flint", "Visual Description" : "A shiny, smooth stone with sharp edges.", "Location Description" : "There is flint here.", "Obtainable" : True,}],
+            [{"Name" : "Flint", "Visual Description" : "A shiny, smooth stone with sharp edges.", "Location Description" : "There is flint here.", "Obtainable" : 2,}],
             "Icon" : "F",
             "Visited":False,
             "Temperature" : 4,
             "Access" : "Open",
             },
+        "Delta" : {
+            "Direction" : {
+                "North" : None,
+                "East" : "Shore",
+                "South" : None,
+                "West" : None,
+                },
+            "Description" : {
+                "Neutral" : "A narrow but deep river meets the sea here. There is some vegetation around the edges, but nothing of any apparent use. To the east is a stretch of beach. North is the ocean. The river continues south. There is thick vegetation surrounding it, but you could make your way through.",
+                },
+            "Items" : [ {
+                    "Name" : "Water", "Visual Description" : "The water is clear and looks refreshing.", "Location Description" : "The water appears clean and drinkable.", "Obtainable" : 2,
+                    },{
+                    "Name" : "Cloth", "Visual Description" : "It appears to be a piece of an old ship mast.", "Location Description" : "There is some tattered cloth here.", "Obtainable" : 1,
+                    },
+                    ],
+            "Icon" : "V",
+            "Visited":False,
+            "Temperature" : 5,
+            "Access" : "Shore",
+            },
+
         }
 
 
@@ -266,8 +294,12 @@ Actions = {
             "Behavior" : lambda pi : wakeup(),
             },
         "Use Ferns On Leg" : {
-            "Test" : lambda pi : checkinventory("Ferns") and checkstatus("Laceration") and matchany(["bandage","wound","laceration","cut"],pi),
+            "Test" : lambda pi : checkavailableitems("Ferns") and checkstatus("Laceration") and matchany(["bandage","wound","laceration","cut"],pi),
             "Behavior" : lambda pi : usefernsonleg(),
+            },
+        "Drink" : {
+            "Test" : lambda pi : checkavailableitems("Water") and matchany(["drink"],pi),
+            "Behavior" : lambda pi : drink(),
             },
         "Inspect Item" : {
             "Test" : lambda pi : matchany(["inspect","look"], pi) and (matchany(getinventoryitemnames(), pi) or matchany(getlocationitemnames(), pi)),
@@ -283,12 +315,16 @@ Actions = {
             },
         "Start Fire" : {
             "Test" : lambda pi : checkavailableitems("Wood") and checkavailableitems("Flint") and matchany(["use","make","build","Construct","start"],pi) and (match("Fire",pi) or (matchall(["wood","flint"],pi))),
-            "Behavior" : lambda pi : [make("Fire"), removeitem("Wood",Inventory),removeitem("Flint",Inventory),],
+            "Behavior" : lambda pi : [make("Fire"), removeitem("Wood"),removeitem("Flint"),],
             },
         "Make Sundial" : {
             "Test" : lambda pi : checkavailableitems("Wood") and checkavailableitems("Sand") and matchany(["use","make","build","Construct","start"],pi) and (match("Sundial",pi) or (matchall(["wood","sand"],pi))),
-            "Behavior" : lambda pi : [make("Sundial"), removeitem("Wood",Inventory),removeitem("Sand",Inventory),],
+            "Behavior" : lambda pi : [make("Sundial"), removeitem("Wood"),removeitem("Sand"),],
             },
+        "Make Pack" : {
+            "Test" : lambda pi : checkavailableitems("Cloth") and checkavailableitems("Vines") and matchany(["use","make","build","Construct","start"],pi) and (match("Pack",pi) or (matchall(["cloth","vines"],pi))),
+            "Behavior" : lambda pi : [make("Pack"), removeitem("cloth"),removeitem("vines"),],
+                                                    },
         "Move Northn" : {
             "Test" : lambda pi : n("n", pi),
             "Behavior" : lambda pi : move("North"),
@@ -343,16 +379,35 @@ def log(string):
 
     l.write("\n" + repr(string))
 
-def removeitem(item, l):
-    for n, i in enumerate(l):
-        if i["Name"]==item:
-            del l[n]
+def drink():
+    global thirst
+    thirst=10
+    removeitem("Water")
+    addprintbuffer("You drink the water and it refreshes you.")
+
+def removeitem(item):
+    boat=None
+    for b in Locations[location]["Items"]:
+        if b["Name"]=="Boat":
+            boat=b
+    for a, x in enumerate(Inventory):
+        if x["Name"]==item and x["Obtainable"] != 2:
+            del Inventory[a]
+    for b, y in enumerate(Locations[location]["Items"]):
+        if y["Name"]==item and y["Obtainable"] != 2:
+            del Locations[location]["Items"][b]
+    if boat is not None:
+        for c in Locations[location]["Items"]:
+            if c["Name"]=="Boat":
+                for d, z in enumerate(c["Holding"]):
+                    if z["Name"]==item and z["Obtainable"] != 2:
+                        del c["Holding"][d]
 
 def make(thing):
     for i in makeables:
         if i["Name"]==thing:
             addprintbuffer("You have made "+thing+".")
-            if i["Obtainable"] is True:
+            if i["Obtainable"] == 1:
                 Inventory.append(i)
             else:
                 Locations[location]["Items"].append(i)
@@ -378,6 +433,7 @@ def dead():
 
 
 def setstats():
+    global MaxInventorySize
     global blood
     global bloodbar
     global stamina
@@ -392,7 +448,13 @@ def setstats():
     global hungerbar
     global status
     global hours
+    global MaxInventorySize
 
+    mobility=10
+
+    for item in Inventory:
+        if item["Name"]=="Pack":
+            MaxInventorySize = 9
 
     bloodbar=[]
     staminabar=[]
@@ -413,9 +475,6 @@ def setstats():
     if stamina<10 and hunger>=3 and time % 1 ==0:
         stamina+=1
         staminafloor=time
-    if mobility<10 and time % 1 == 0:
-        mobility+=1
-        mobilityfloor=time
     if time %10 ==0:
         hunger-=1
         hungerfloor=time
@@ -475,7 +534,19 @@ def setstats():
         if checkstatus("Hungry") is True:
             removestatus("Hungry")
 
+    if checkstatus("Laceration"):
+        if blood>5:
+            blood=5
+        if mobility>5:
+            mobility=5
 
+    RealMaxInventorySize=MaxInventorySize+1
+    if RealMaxInventorySize - len(Inventory) == 2:
+        mobility-=2
+    if RealMaxInventorySize - len(Inventory) == 1:
+        mobility-=4
+    if RealMaxInventorySize - len(Inventory) == 0:
+        mobility-=6
 
     if checkstatus("Laceration"):
         if blood>5:
@@ -533,6 +604,7 @@ def usefernsonleg():
     for n, s in enumerate(status):
         if s=="Laceration":
             del status[n]
+            remove("Ferns")
             addprintbuffer("You rub the oozing fern on the wound in your leg and it causes a cool, numbing sensation. The bleeding has stopped.")
 def openrickensdoor():
     for i in Locations["Ricken's Door"]["Items"]:
@@ -714,27 +786,58 @@ def matchall(patternlist, string):
     return True
 
 def pickup(itemname):
-    item = None
-    for i in Locations[location]["Items"]:
-        if itemname == i["Name"] and i["Obtainable"] is True:
-            item = i
-            Locations[location]["Items"].remove(item)
-            Inventory.append(item)
+    global MaxInventorySize
+    for num, p in enumerate(Inventory):
+        if num >= MaxInventorySize:
+            addprintbuffer("You can not carry anymore items.")
+            return
+    for posession in Inventory:
+        if posession["Name"]==itemname:
+            addprintbuffer("You already have " + itemname + ".")
+            return
+    for item in Locations[location]["Items"]:
+        if itemname == item["Name"]:
+            if item["Obtainable"]==1:
+                Locations[location]["Items"].remove(item)
+                Inventory.append(item)
+            if item["Obtainable"]==0:
+                addprintbuffer("You cannot pick this up.")
+                return
+            if item["Obtainable"]==2:
+                ItemCopy=deepcopy(item)
+                Inventory.append(ItemCopy)
+                for i in Inventory:
+                    if i["Name"]==itemname:
+                        i["Obtainable"]=1
+
             addprintbuffer("You have obtained " + item["Name"] + ".")
             return
-    for n in Locations[location]["Items"]:
-        if n["Name"]=="Boat":
-            for h in n["Holding"]:
-                if itemname == h["Name"] and h["Obtainable"] is True:
-                    item = h
-                    n["Holding"].remove(item)
-                    Inventory.append(item)
-                    addprintbuffer("You have obtained " + item["Name"] + ".")
+
+        elif item["Name"]=="Boat":
+            for subitem in item["Holding"]:
+                if itemname == subitem["Name"]:
+                    if subitem["Obtainable"] == 1:
+                        item["Holding"].remove(subitem)
+                        Inventory.append(subitem)
+                    if subitem["Obtainable"] == 0:
+                        addprintbuffer("You cannot pick this up.")
+                        return
+                    if subitem["Obtainable"]==2:
+                        SubitemCopy=deepcopy(subitem)
+                        Inventory.append(SubitemCopy)
+                        for i in Inventory:
+                            if i["Name"]==itemname:
+                                i["Obtainable"]=1
+
+                    addprintbuffer("You have obtained " + subitem["Name"] + ".")
                     return
 
     addprintbuffer("You cannot.")
 
 def move(direction):
+    if mobility == 0:
+        addprintbuffer("You are unable to move.")
+        return
     global location
     boat=None
     destination=Locations[location]["Direction"][direction]
@@ -763,7 +866,6 @@ def move(direction):
             if direction == "West":
                 mappos["x"]=mappos["x"]-1
         elif boat is not None and Locations[destination]["Access"]=="Water":
-            addprintbuffer("BOAT IS TRUE")
             Locations[location]["Items"].remove(boat)
             Locations[destination]["Items"].append(boat)
             mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
