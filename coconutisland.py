@@ -99,7 +99,7 @@ while (promptinput != "exit"):
     if action:
         action["Behavior"](promptinput)
     else:
-        startdata.addprintbuffer("You Cannot.")
+        startdata.addprintbuffer("You cannot.")
 curses.nocbreak()
 stdscr.keypad(False)
 curses.echo()

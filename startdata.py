@@ -1,6 +1,7 @@
 import re
 import datetime
 from copy import deepcopy
+from random import *
 printbuffer = ["You're soaked. Have been for hours. There's lightning, but you can't hear the thunder over the constant beat of the rain on the ocean. In the flashes you can see the big houses on Ingrete tumbling down the hillside. Must have been a mudslide. Chop is lapping onto the dock and washing over your ankles. You came to Ricken's because you've already expended your other options. He can get you out and he wants what you've got."]
 promptinput = ""
 action = ""
@@ -48,7 +49,10 @@ mobilitymod=1
 mobilityfloor=1
 makeables=[{"Name" : "Fire","Visual Description" : "A small fire. It offers meager warmth.", "Location Description" : "There is a fire here.", "Obtainable" : 0,"Edible": False,},
         {"Name" : "Sundial","Visual Description" : "A stick protruding from the sand. The shadow coming off of the stick indicates the time of day. Only works where sunlight is present.", "Location Description" : "There is a sundial here.", "Obtainable" : 0,"Edible": False,},
-        {"Name":"Pack", "Visual Description":"A crude packpack you crafted out of an old shipmast and some vines. It carries little and looks like it might fall apart from a slight jossling.","Location Description":"There is a pack here.", "Obtainable":1,"Edible": False,}]
+        {"Name":"Pack", "Visual Description":"A crude packpack you crafted out of an old shipmast and some vines. It carries little and looks like it might fall apart from a slight jossling.","Location Description":"There is a pack here.", "Obtainable":1,"Edible": False,},
+        {"Name" : "Map", "Visual Description" : "A map of the indian ocean. From what you can tell, your current location is unmarked. You will have to update the map as you go.","Location Description" : "There is what appears to be a rolled up map here.", "Obtainable" : 1,"Edible": False,},
+    {"Name" : "Splint","Visual Description" : "A crude medical device that can be used on a broken bone.", "Location Description" : "There is a splint here.", "Obtainable" : 1,"Edible": False,},
+        ]
 
 time=65
 hours=0
@@ -56,12 +60,12 @@ hours=0
 Locations = {
         "Ricken's Door" : {
             "Direction" : {
-                "North" : None,
-                "East" : None,
-                "South" : None,
-                "West" : None,
-                "Hidden" : "Docks",
-                "Hidden2" : "Ricken's Hovel",
+                "North" : {"Destination" : None, "Access" : None},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : None, "Access" : None},
+                "West" : {"Destination" : None, "Access" : None},
+                "Hidden" : {"Destination":"Docks", "Access" : "Open"},
+                "Hidden2" : {"Destination":"Ricken's Hovel", "Access" : "Open"},
                 },
             "Description" : {
                 "Neutral" : "You stand in front of Ricken's door. It's east of you. His home is a dilapidated shack in a row of dilapidated shacks that line the waterfront. North of you is the docks. The crowd at the boats is impassable. The cobblestone is slippery under your boots.",
@@ -73,14 +77,13 @@ Locations = {
             "Icon" : "_",
             "Visited" : True,
             "Temperature" : 5,
-            "Access" : "Open",
             },
         "Ricken's Hovel" : {
             "Direction" : {
-                "North" : None,
-                "East" : None,
-                "South" : None,
-                "West" : "Ricken's Door",
+                "North" : {"Destination" : None, "Access" : None},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : None, "Access" : None},
+                "West" : {"Destination" : "Ricken's Door", "Access" : "Open"},
                 },
             "Description" : {
                 "Neutral" : "A small room lit by a mostly open fire with a cast iron pot hung over it. There are rum bottles scattered across the floor. The door to the west leads outside.",
@@ -93,14 +96,13 @@ Locations = {
             "Icon" : "_",
             "Visited":False,
             "Temperature" : 6,
-            "Access" : "Open",
             },
         "Docks" : {
             "Direction" : {
-                "North" : None,
-                "East" : None,
-                "South" : None,
-                "West" : None,
+                "North" : {"Destination" : None, "Access" : None},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : None, "Access" : None},
+                "West" : {"Destination" : None, "Access" : None},
                 },
             "Description" : {
                 "Neutral" : "The entire population of the island is at the docks trying to get passage on a boat. One trawler is inundated with flesh and taking on water. Ricken's men are fending them off with spears. Ricken stands at the edge of his boat with his rifle on his hip waiting for you.",
@@ -111,14 +113,13 @@ Locations = {
             "Visited":False,
             "First Visit Text" : "As the crowd encroahces on his boat, Ricken fires his rifle into the air. The scene goes quiet except for one woman with a baby. She sees you waiver as you board and she pleads for you to take the child. You look away and she pushes it under your arm. You throw your hands up and the kid goes into the drink. She goes onto her knees. Two of the men leap at you.",
             "Temperature" : 5,
-            "Access" : "Open",
             },
         "Unconscious" : {
             "Direction" : {
-                "North" : None,
-                "East" : None,
-                "South" : None,
-                "West" : None,
+                "North" : {"Destination" : None, "Access" : None},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : None, "Access" : None},
+                "West" : {"Destination" : None, "Access" : None},
                 },
             "Description" : {
                 "Neutral" : "You are unconscious.",
@@ -128,14 +129,13 @@ Locations = {
             "Icon" : "_",
             "Visited":False,
             "Temperature" : 5,
-            "Access" : "Open",
             },
         "Ocean" : {
             "Direction" : {
-                "North" : None,
-                "East" : None,
-                "South" : "Shore",
-                "West" : None,
+                "North" : {"Destination" : None, "Access" : None},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : "Shore", "Access" : "Shore"},
+                "West" : {"Destination" : None, "Access" : None},
                 },
             "Description" : {
                 "Neutral" : "You are on a small boat on a roiling sea. The sky is blotched with dark, gray clouds. It fades into the ocean in all directions save to the south. There you see a sliver of dark between the peaks of the waves.",
@@ -145,14 +145,13 @@ Locations = {
             "Icon" : "\u223F",
             "Visited" : False,
             "Temperature" : 5,
-            "Access" : "Water",
             },
         "Shore" : {
             "Direction" : {
-                "North" : "Ocean",
-                "East" : None,
-                "South" : "Jungle",
-                "West" : "Delta",
+                "North" : {"Destination" : "Ocean", "Access" : "Water"},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : "Jungle", "Access" : "Open"},
+                "West" : {"Destination" : "Delta", "Access" : "Open"},
                 },
             "Description" : {
                 "Neutral" : "The sand is gray, as is everything. The sea is north. To the east and west there is more beach. South there is a path into the jungle. A bare, black crag juts out from its center.",
@@ -162,22 +161,23 @@ Locations = {
                     },
                     {
                         "Name" : "Boat", "Visual Description" : "It's got room for four crew or some small cargo.", "Location Description" : "There is a boat here.", "Obtainable" : 0,"Edible": False, "Holding": [{
-                            "Name" : "Map", "Visual Description" : "A map of the indian ocean. From what you can tell, your current location is unmarked. You will have to update the map as you go.","Location Description" : "There is what appears to be a rolled up map here.", "Obtainable" : 1,"Edible": False,
-                    },{
                         "Name" : "Oar", "Visual Description" : "A wooden oar that has been worn smooth and shiny from use.","Location Description" : "There is an oar sitting next to you.", "Obtainable" : 1,"Edible": False,
-                    },],
+                    },{
+                        "Name" : "Paper", "Visual Description" : "A blank sheet of paper. It would be perfect for drawing a map on.","Location Description" : "Ther is a rolled up piece of paper here.", "Obtainable" : 1,"Edible": False,
+                        },{
+                        "Name" : "Pencil", "Visual Description" : "A well-used pencil. You will have to be thoughtful and conserve it.","Location Description" : "There is a pencil here.", "Obtainable" : 1,"Edible": False,
+                            },],
                     },],
             "Icon" : "\u2592",
             "Visited":True,
             "Temperature" : 5,
-            "Access" : "Shore",
             },
         "Jungle" : {
             "Direction" : {
-                "North" : "Shore",
-                "East" : None,
-                "South" : "Cave",
-                "West" : None,
+                "North" : {"Destination" : "Shore", "Access" : "Open"},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : "Cave", "Access" : "Open"},
+                "West" : {"Destination" : None, "Access" : None},
                 },
             "Description" : {
                 "Neutral" : "The air in the jungle is thick. You can only cut a narrow path through. Huge ferns sweep past your legs as you walk. They could be hiding anything. To the south, almost hidden behind a huge, moss covered rock, you find the entrance to the cave. To the east and west there is more jungle. You can hear the ocean to the north.",
@@ -193,15 +193,14 @@ Locations = {
             "Icon" : "J",
             "Visited":False,
             "Temperature" : 5,
-            "Access" : "Open",
             },
         "Cave" : {
             "Direction" : {
-                "North" : "Jungle",
-                "East" : None,
-                "South" : None,
-                "West" : None,
-                "Hidden" : "Chamber",
+                "North" : {"Destination" : "Jungle", "Access" : "Open"},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : None, "Access" : None},
+                "West" : {"Destination" : None, "Access" : None},
+                "Hidden" : {"Destination" : "Chamber", "Access" : "Open"},
                 },
             "Description" : {
                 "Neutral" : "You are in a dark cave. The walls are wet and slick. After your eyes adjust you can see what appears to be a switch set into the wall high above you.",
@@ -212,15 +211,14 @@ Locations = {
             "Icon" : "C",
             "Visited":False,
             "Temperature" : 4,
-            "Access" : "Open",
             },
         "Chamber" : {
             "Direction" : {
-                "North" : "Cave",
-                "East" : None,
-                "South" : None,
-                "West" : None,
-                "Hidden" : None,
+                "North" : {"Destination" : "Cave", "Access" : "Open"},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : None, "Access" : None},
+                "West" : {"Destination" : None, "Access" : None},
+                "Hidden" : {"Destination" : None, "Access" : None},
                 },
             "Description" : {
                 "Neutral" : "This is a smaller cave. The walls are jagged and shiny.",
@@ -231,17 +229,16 @@ Locations = {
             "Icon" : "F",
             "Visited":False,
             "Temperature" : 4,
-            "Access" : "Open",
             },
         "Delta" : {
             "Direction" : {
-                "North" : None,
-                "East" : "Shore",
-                "South" : None,
-                "West" : None,
+                "North" : {"Destination" : "Ocean", "Access" : "Water"},
+                "East" : {"Destination" : "Shore", "Access" : "Open"},
+                "South" : {"Destination" : "Waterfall", "Access" : "Climb"},
+                "West" : {"Destination" : None, "Access" : None},
                 },
             "Description" : {
-                "Neutral" : "A narrow but deep river meets the sea here. There is some vegetation around the edges, but nothing of any apparent use. To the east is a stretch of beach. North is the ocean. The river continues south. There is thick vegetation surrounding it, but you could make your way through.",
+                "Neutral" : "A narrow but deep river meets the sea here. There is some vegetation around the edges, but nothing of any apparent use. To the east is a stretch of beach. North is the ocean. To the south is a high waterfall. It's falling from a cliff. There are hand holds in the cliff, but you have never climbed anything that didn't have rungs.",
                 },
             "Items" : [ {
                 "Name" : "Water", "Visual Description" : "The water is clear and looks refreshing.", "Location Description" : "The water appears clean and drinkable.", "Obtainable" : 2,"Edible": False,
@@ -254,7 +251,24 @@ Locations = {
             "Icon" : "V",
             "Visited":False,
             "Temperature" : 5,
-            "Access" : "Shore",
+            },
+        "Waterfall" : {
+            "Direction" : {
+                "North" : {"Destination" : "Delta", "Access" : "Climb"},
+                "East" : {"Destination" : None, "Access" : None},
+                "South" : {"Destination" : None, "Access" : None},
+                "West" : {"Destination" : None, "Access" : None},
+                },
+            "Description" : {
+                "Neutral" : "You stand at the edge of a sheer cliff. It is as high as a three story building. A deep river comes from the South and flows over the cliff. The sound of the falling water is deafening. You might be able to climb down here, but the thought of it make your chest tighten up and your stomach drop.",
+                },
+            "Items" : [ {
+                "Name" : "Water", "Visual Description" : "The water is clear and looks refreshing.", "Location Description" : "The water appears clean and drinkable.", "Obtainable" : 2,"Edible": False,
+                    },
+                    ],
+            "Icon" : "W",
+            "Visited":False,
+            "Temperature" : 5,
             },
 
         }
@@ -294,9 +308,13 @@ Actions = {
             "Test" : lambda pi : match("wake",pi) and location == "Unconscious",
             "Behavior" : lambda pi : wakeup(),
             },
-        "Use Ferns On Leg" : {
+        "Use Ferns On Laceration" : {
             "Test" : lambda pi : checkavailableitems("Ferns") and checkstatus("Laceration") and matchany(["bandage","wound","laceration","cut"],pi),
-            "Behavior" : lambda pi : usefernsonleg(),
+            "Behavior" : lambda pi : usefernsonlaceration(),
+            },
+        "Use Splint On Broken Bone" : {
+            "Test" : lambda pi : checkavailableitems("Splint") and checkstatus("Broken Bone") and matchany(["splint","broken bone",],pi),
+            "Behavior" : lambda pi : usesplintonbrokenbone(),
             },
         "Drink" : {
             "Test" : lambda pi : checkavailableitems("Water") and matchany(["drink"],pi),
@@ -323,13 +341,21 @@ Actions = {
             "Behavior" : lambda pi : [make("Fire"), removeitem("Wood"),removeitem("Flint"),],
             },
         "Make Sundial" : {
-            "Test" : lambda pi : checkavailableitems("Wood") and checkavailableitems("Sand") and matchany(["use","make","build","Construct","start"],pi) and (match("Sundial",pi) or (matchall(["wood","sand"],pi))),
+            "Test" : lambda pi : checkavailableitems("Wood") and checkavailableitems("Sand") and matchany(["use","make","build","Construct",],pi) and (match("Sundial",pi) or (matchall(["wood","sand"],pi))),
             "Behavior" : lambda pi : [make("Sundial"), removeitem("Wood"),removeitem("Sand"),],
             },
         "Make Pack" : {
-            "Test" : lambda pi : checkavailableitems("Cloth") and checkavailableitems("Vines") and matchany(["use","make","build","Construct","start"],pi) and (match("Pack",pi) or (matchall(["cloth","vines"],pi))),
-            "Behavior" : lambda pi : [make("Pack"), removeitem("cloth"),removeitem("vines"),],
-                                                    },
+            "Test" : lambda pi : checkavailableitems("Cloth") and checkavailableitems("Vines") and matchany(["use","make","build","Construct",],pi) and (match("Pack",pi) or (matchall(["cloth","vines"],pi))),
+            "Behavior" : lambda pi : [make("Pack"), removeitem("Cloth"),removeitem("Vines"),],
+                        },
+        "Make Map" : {
+            "Test" : lambda pi : checkavailableitems("Paper") and checkavailableitems("Pencil") and matchany(["use","make","build","Construct",],pi) and (match("Map",pi) or (matchall(["paper","pencil"],pi))),
+            "Behavior" : lambda pi : [make("Map"), removeitem("Paper"),removeitem("Pencil"),],
+                        },
+        "Make Splint" : {
+            "Test" : lambda pi : checkavailableitems("Wood") and checkavailableitems("Vines") and matchany(["use","make","build","Construct",],pi) and (match("Splint",pi) or (matchall(["wood","vines"],pi))),
+            "Behavior" : lambda pi : [make("Splint"), removeitem("Wood"),removeitem("Vines"),],
+                        },
         "Move Northn" : {
             "Test" : lambda pi : n("n", pi),
             "Behavior" : lambda pi : move("North"),
@@ -369,6 +395,10 @@ Actions = {
         "Print Inventory" : {
             "Test" : lambda pi : match("inv", pi),
             "Behavior" : lambda pi : printinventory(),
+            },
+        "Help" : {
+            "Test" : lambda pi : matchany(["help"],pi),
+            "Behavior" : lambda pi:addprintbuffer("Thanks for playing Coconut Island! It is my first game and I am literally using it to teach myself to program so apologies if it is garbage. Anyway, you will only be able to move in this game using cardinal directions: North, East, South, and West. You can use the word alone, or even just the lowercase initial to make getting around easier. Try using pairs of items in your inventory on eachother(Use pencil with paper). You can craft many useful things this way. Watch your status bars! Try to be prepared and bring food and water wherever you go. http://github.com/munderwoods/"),
             },
         "Wait" : {
             "Test" : lambda pi : matchany(["wait","rest","sleep"],pi),
@@ -580,9 +610,13 @@ def setstats():
 
     if checkstatus("Laceration"):
         if blood>5:
-            blood=5
+            blood-=5
         if mobility>5:
-            mobility=5
+            mobility-=5
+
+    if checkstatus("Broken Bone"):
+        if mobility>3:
+            mobility-=7
 
     if blood<0:
         blood=0
@@ -628,14 +662,24 @@ def removestatus(item):
     global status
     for n, s in enumerate(status):
         if s==item:
+            del status[n
+                    ]
+def usesplintonbrokenbone():
+    global status
+    for n, s in enumerate(status):
+        if s=="Broken Bone":
             del status[n]
-def usefernsonleg():
+            removeitem("Splint")
+            addprintbuffer("You tie the wood firmly to your broken body. You are starting to regain some mobility.")
+
+def usefernsonlaceration():
     global status
     for n, s in enumerate(status):
         if s=="Laceration":
             del status[n]
             removeitem("Ferns")
             addprintbuffer("You rub the oozing fern on the wound in your leg and it causes a cool, numbing sensation. The bleeding has stopped.")
+
 def openrickensdoor():
     for i in Locations["Ricken's Door"]["Items"]:
         if i["Name"] == "Door":
@@ -794,8 +838,9 @@ def getavailableitems():
     for i in Locations[location]["Items"]:
         AvailableItems.append(i)
     boat=list(filter(lambda x: x["Name"]=="Boat",Locations[location]["Items"]))
-    for a in boat[0]["Holding"]:
-        AvailableItems.append(a)
+    if len(boat) !=0:
+        for a in boat[0]["Holding"]:
+            AvailableItems.append(a)
     for b in Inventory:
         AvailableItems.append(b)
     return AvailableItems
@@ -881,7 +926,7 @@ def move(direction):
         return
     global location
     boat=None
-    destination=Locations[location]["Direction"][direction]
+    destination=Locations[location]["Direction"][direction]["Destination"]
     for b in Locations[location]["Items"]:
         if b["Name"]=="Boat":
             boat=b
@@ -889,7 +934,7 @@ def move(direction):
         addprintbuffer("You cannot.")
         return
     else:
-        if Locations[destination]["Access"]=="Open":
+        if Locations[location]["Direction"][direction]["Access"]=="Open":
             mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
             location = destination
             if Locations[location]["Visited"]==False:
@@ -906,7 +951,8 @@ def move(direction):
                 mappos["x"]=mappos["x"]+1
             if direction == "West":
                 mappos["x"]=mappos["x"]-1
-        elif boat is not None and Locations[destination]["Access"]=="Water":
+            return
+        elif boat is not None and Locations[location]["Direction"][direction]["Access"]=="Water":
             Locations[location]["Items"].remove(boat)
             Locations[destination]["Items"].append(boat)
             mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
@@ -925,7 +971,8 @@ def move(direction):
                 mappos["x"]=mappos["x"]+1
             if direction == "West":
                 mappos["x"]=mappos["x"]-1
-        elif boat is not None and Locations[location]["Access"]=="Water" and Locations[destination]["Access"]=="Shore":
+            return
+        elif boat is not None and Locations[location]["Direction"][direction]["Access"]=="Shore":
             Locations[location]["Items"].remove(boat)
             Locations[destination]["Items"].append(boat)
             mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
@@ -944,7 +991,8 @@ def move(direction):
                 mappos["x"]=mappos["x"]+1
             if direction == "West":
                 mappos["x"]=mappos["x"]-1
-        elif Locations[destination]["Access"]=="Shore":
+            return
+        elif Locations[location]["Direction"][direction]["Access"]=="Shore":
             mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
             location = destination
             if Locations[location]["Visited"]==False:
@@ -961,6 +1009,63 @@ def move(direction):
                 mappos["x"]=mappos["x"]+1
             if direction == "West":
                 mappos["x"]=mappos["x"]-1
+            return
+        elif Locations[location]["Direction"][direction]["Access"]=="Climb":
+            if climb(destination) is True:
+                mapgrid[mappos["y"]][mappos["x"]]=Locations[location]["Icon"]
+                location = destination
+                if Locations[location]["Visited"]==False:
+                    Locations[location]["Visited"]=True
+                    try:
+                        addprintbuffer(Locations[location]["First Visit Text"])
+                    except KeyError:
+                        addprintbuffer("")
+                if direction == "South":
+                    mappos["y"]=mappos["y"]+1
+                if direction == "North":
+                    mappos["y"]=mappos["y"]-1
+                if direction == "East":
+                    mappos["x"]=mappos["x"]+1
+                if direction == "West":
+                    mappos["x"]=mappos["x"]-1
+            return
+
+
+    addprintbuffer("You cannot.")
+
+def climb(location):
+    global mobility
+    global stamina
+    Difficulty=50
+    LocMod=0
+    roll=randint(1, 100)
+    if checkinventory("Petons") is True:
+        Difficulty-=15
+        addprintbuffer("You use your petons.")
+    if checkinventory("Grappling Hook") is True:
+        Difficulty-=20
+        addprintbuffer("You throw your grappling hook over the ledge until it holds fast.")
+    Difficulty+=(10-mobility)
+    Difficulty+=(20-stamina)
+
+    if location== "Waterfall":
+        LocMod=20
+
+    Difficulty+=LocMod
+    if Difficulty>100:
+        Difficulty=100
+    if Difficulty<0:
+        Difficulty=0
+    if roll>=Difficulty:
+        addprintbuffer("You climb the obstacle without incident.")
+        stamina-=9
+        return True
+    else:
+        addprintbuffer("Halfway through the climb you slip and tumble to the hard ground below, injuring yourself severely.")
+        status.append("Broken Bone")
+        return False
+
+
 
 
 def getprompt() :
